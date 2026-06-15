@@ -36,10 +36,11 @@
     <style>
         body { background-color: #f8fafc; -webkit-font-smoothing: antialiased; }
         
-        /* A4 Print Layout container */
+        /* A4 Print Layout container - explicit sizing and box-sizing to prevent page spills */
         .a4-print {
             width: 210mm;
-            height: 296mm; /* Changed from min-height: 297mm to prevent blank second page */
+            height: 297mm;
+            box-sizing: border-box;
             background: white;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             margin: 0 auto;
@@ -59,7 +60,7 @@
         <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md border border-slate-200">
             <div class="text-center mb-8">
                 <div class="w-16 h-16 mx-auto bg-brand-blue rounded-2xl flex items-center justify-center text-white mb-4 shadow-lg shadow-blue-500/30">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2-0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                 </div>
                 <h1 class="text-2xl font-bold text-brand-navy font-heading">MindCare Secure Access</h1>
                 <p class="text-slate-500 text-sm mt-2">Doctor Portal Only</p>
@@ -197,7 +198,7 @@
 
                         <div class="text-center w-1/3 relative flex flex-col items-center">
                             <div class="h-20 flex items-center justify-center relative w-full">
-                                <img src="../public/seal.png" alt="" class="absolute -left-4 top-0 h-24 opacity-40 mix-blend-multiply" onerror="this.style.display='none'">
+                                <img src="../public/seal.png" alt="" class="absolute -left-4 top-0 h-24 opacity-30" onerror="this.style.display='none'">
                                 <img src="../public/sign.png" alt="" class="h-16 relative z-10" onerror="this.style.display='none'">
                             </div>
                             <div class="w-48 border-t border-slate-300 mx-auto mt-2"></div>
@@ -284,7 +285,7 @@
         bindConditional('in-diagnosis', 'out-diagnosis', 'diagnosis-container');
         bindConditional('in-advice', 'out-advice', 'advice-container');
 
-        // 4. Generate PDF Logic
+        // 4. Advanced Generate PDF Logic with Mobile Document Isolation Hook
         function generatePDF() {
             const element = document.getElementById('prescription-preview');
             const name = document.getElementById('in-name').value || 'Patient';
@@ -295,16 +296,35 @@
                 filename:     `Rx_${name}_${dateStr}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { 
-                    scale: 2,           // Lowered to prevent mobile memory crash
+                    scale: 2, 
                     useCORS: true, 
-                    logging: false, 
-                    windowWidth: 800,   // Keeps formatting correct
-                    scrollY: 0          // Prevents cut-offs if user is scrolled down
+                    logging: false,
+                    letterRendering: true,
+                    // The onclone hook isolates the layout completely from mobile viewport constraints
+                    onclone: (clonedDoc) => {
+                        const preview = clonedDoc.getElementById('prescription-preview');
+                        
+                        // Force desktop dimension properties to the cloned snapshot
+                        preview.style.width = '210mm';
+                        preview.style.height = '297mm';
+                        preview.style.minWidth = '210mm';
+                        preview.style.minHeight = '297mm';
+                        preview.style.position = 'relative';
+                        preview.style.margin = '0';
+                        
+                        // Clear the cloned document's mobile body wrapper hierarchy completely
+                        clonedDoc.body.innerHTML = '';
+                        clonedDoc.body.style.margin = '0';
+                        clonedDoc.body.style.padding = '0';
+                        
+                        // Inject our layout directly into the clean canvas root
+                        clonedDoc.body.appendChild(preview);
+                    }
                 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // Start PDF generation
+            // Process document capture sequence
             html2pdf().set(opt).from(element).save();
         }
     </script>
