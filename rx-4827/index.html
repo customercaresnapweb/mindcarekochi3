@@ -39,7 +39,7 @@
         /* A4 Print Layout container */
         .a4-print {
             width: 210mm;
-            min-height: 297mm;
+            height: 296mm; /* Changed from min-height: 297mm to prevent blank second page */
             background: white;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             margin: 0 auto;
@@ -290,12 +290,17 @@
             const name = document.getElementById('in-name').value || 'Patient';
             const dateStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
             
-            // Updated html2canvas options with windowWidth for better mobile output
             const opt = {
                 margin:       0,
                 filename:     `Rx_${name}_${dateStr}.pdf`,
-                image:        { type: 'jpeg', quality: 1.0 },
-                html2canvas:  { scale: 4, useCORS: true, logging: false, windowWidth: 800 },
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { 
+                    scale: 2,           // Lowered to prevent mobile memory crash
+                    useCORS: true, 
+                    logging: false, 
+                    windowWidth: 800,   // Keeps formatting correct
+                    scrollY: 0          // Prevents cut-offs if user is scrolled down
+                },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
