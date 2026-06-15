@@ -36,7 +36,7 @@
     <style>
         body { background-color: #f8fafc; -webkit-font-smoothing: antialiased; }
         
-        /* A4 Print Layout container - explicit sizing and box-sizing to prevent page spills */
+        /* A4 Print Layout container - explicit sizing to prevent page spills */
         .a4-print {
             width: 210mm;
             height: 297mm;
@@ -60,7 +60,7 @@
         <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md border border-slate-200">
             <div class="text-center mb-8">
                 <div class="w-16 h-16 mx-auto bg-brand-blue rounded-2xl flex items-center justify-center text-white mb-4 shadow-lg shadow-blue-500/30">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2-0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                 </div>
                 <h1 class="text-2xl font-bold text-brand-navy font-heading">MindCare Secure Access</h1>
                 <p class="text-slate-500 text-sm mt-2">Doctor Portal Only</p>
@@ -285,8 +285,15 @@
         bindConditional('in-diagnosis', 'out-diagnosis', 'diagnosis-container');
         bindConditional('in-advice', 'out-advice', 'advice-container');
 
-        // 4. Advanced Generate PDF Logic with Mobile Document Isolation Hook
+        // 4. Safe Generate PDF Logic with Error Handling
         function generatePDF() {
+            // Find the button and show a loading state
+            const btn = document.querySelector('button[onclick="generatePDF()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Generating PDF... Please wait';
+            btn.style.opacity = '0.7';
+            btn.style.pointerEvents = 'none';
+
             const element = document.getElementById('prescription-preview');
             const name = document.getElementById('in-name').value || 'Patient';
             const dateStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
@@ -299,33 +306,26 @@
                     scale: 2, 
                     useCORS: true, 
                     logging: false,
-                    letterRendering: true,
-                    // The onclone hook isolates the layout completely from mobile viewport constraints
-                    onclone: (clonedDoc) => {
-                        const preview = clonedDoc.getElementById('prescription-preview');
-                        
-                        // Force desktop dimension properties to the cloned snapshot
-                        preview.style.width = '210mm';
-                        preview.style.height = '297mm';
-                        preview.style.minWidth = '210mm';
-                        preview.style.minHeight = '297mm';
-                        preview.style.position = 'relative';
-                        preview.style.margin = '0';
-                        
-                        // Clear the cloned document's mobile body wrapper hierarchy completely
-                        clonedDoc.body.innerHTML = '';
-                        clonedDoc.body.style.margin = '0';
-                        clonedDoc.body.style.padding = '0';
-                        
-                        // Inject our layout directly into the clean canvas root
-                        clonedDoc.body.appendChild(preview);
-                    }
+                    windowWidth: 1024 // Forces desktop rendering safely without breaking the DOM
                 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // Process document capture sequence
-            html2pdf().set(opt).from(element).save();
+            // Start PDF generation with Promise handling
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Restore button after successful save
+                btn.innerHTML = originalText;
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+            }).catch(err => {
+                // Catch errors so it doesn't just freeze silently
+                console.error(err);
+                alert("PDF Generation Blocked!\n\nIf you are running this file directly from your computer (file:///), your browser is blocking the script from reading your local image files due to strict security rules. To fix this, you must run the file via a local server or convert your images to Base64.");
+                
+                btn.innerHTML = originalText;
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+            });
         }
     </script>
 </body>
