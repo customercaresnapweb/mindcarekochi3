@@ -60,8 +60,8 @@
                             <p class="text-slate-500 text-sm whitespace-nowrap">MBBS, MD (Psychiatry)</p>
                         </div>
                         <div class="text-right">
-                            <img src="../public/logo.png" class="h-16 ml-auto mb-2" onerror="this.style.display='none'">
-                            <p class="text-slate-500 text-sm font-medium whitespace-nowrap">MindCare Psychiatry Clinic</p>
+                            <img src="../public/logo.png" class="h-24 ml-auto mb-3 object-contain" onerror="this.style.display='none'">
+                            <p class="text-brand-navy text-sm font-bold whitespace-nowrap">MindCare Psychiatry Clinic</p>
                         </div>
                     </div>
                     
@@ -162,20 +162,19 @@
             document.getElementById('out-agesex').innerText = `${document.getElementById('in-age').value || '___'} / ${document.getElementById('in-sex').value || '___'}`;
         }
         
-        // FIX: Force Desktop Screen Dimensions for Mobile Devices
+        // Force Desktop Screen Dimensions for Mobile Devices
         function generateImage() {
             const element = document.getElementById('prescription-preview');
             const btn = document.getElementById('export-btn');
             const originalText = btn.innerText;
-            btn.innerText = "Generating Image..."; // Shows you it is working
+            btn.innerText = "Generating Image..."; 
             
             html2canvas(element, {
-                scale: 3, // High quality, perfect for WhatsApp
+                scale: 3, 
                 useCORS: true,
-                windowWidth: 1200, // CRITICAL FIX: Forces the phone to render the image like a desktop screen
+                windowWidth: 1200, 
                 onclone: function (clonedDoc) {
                     const clonedElement = clonedDoc.getElementById('prescription-preview');
-                    // Force exact A4 dimensions on the cloned image so it never squishes
                     clonedElement.style.transform = 'none';
                     clonedElement.style.width = '794px'; 
                     clonedElement.style.minHeight = '1123px';
