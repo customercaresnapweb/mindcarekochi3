@@ -7,9 +7,7 @@
     <meta name="robots" content="noindex, nofollow">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
     <script>
         tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Manrope', 'sans-serif'] }, colors: { brand: { navy: '#0f172a', blue: '#2563eb', slate: '#475569' } } } } }
     </script>
@@ -53,44 +51,82 @@
             </div>
 
             <div class="w-full lg:col-span-8 flex justify-center pb-10 overflow-hidden">
-                <div id="prescription-preview" class="a4-print flex flex-col relative bg-white overflow-hidden text-black font-sans w-full max-w-[210mm] scale-[0.6] lg:scale-100 origin-top p-12">
-                    <div class="border-b-2 border-brand-blue flex justify-between items-end pb-6">
+                <div id="prescription-preview" class="a4-print flex flex-col relative bg-white overflow-hidden text-black font-sans w-full max-w-[210mm] scale-[0.6] lg:scale-100 origin-top">
+                    
+                    <div class="px-10 pt-12 pb-6 border-b-2 border-brand-blue flex justify-between items-end">
                         <div>
                             <h1 class="text-3xl font-extrabold text-brand-navy">Dr. Abimanyu P.K</h1>
-                            <p class="text-brand-blue font-bold">Consultant Psychiatrist</p>
+                            <p class="text-brand-blue font-bold text-lg">Consultant Psychiatrist</p>
                             <p class="text-slate-500 text-sm">MBBS, MD (Psychiatry)</p>
                         </div>
                         <div class="text-right">
                             <img src="../public/logo.png" class="h-16 ml-auto mb-2" onerror="this.style.display='none'">
-                            <p class="text-slate-500 text-sm">MindCare Psychiatry Clinic</p>
+                            <p class="text-slate-500 text-sm font-medium">MindCare Psychiatry Clinic</p>
                         </div>
                     </div>
-                    <div class="py-4 border-b text-sm font-semibold flex gap-8">
-                        <p>Name: <span id="out-name">__________________</span></p>
-                        <p>Age/Sex: <span id="out-agesex">___ / ___</span></p>
+                    
+                    <div class="px-10 py-3 bg-slate-50 border-b border-slate-200 flex justify-between items-center text-sm">
+                        <div class="flex gap-8">
+                            <p><span class="text-slate-400 font-bold uppercase text-xs tracking-wider mr-1">Name:</span> <span id="out-name" class="font-bold text-brand-navy">__________________</span></p>
+                            <p><span class="text-slate-400 font-bold uppercase text-xs tracking-wider mr-1">Age/Sex:</span> <span id="out-agesex" class="font-bold text-brand-navy">___ / ___</span></p>
+                        </div>
+                        <p><span class="text-slate-400 font-bold uppercase text-xs tracking-wider mr-1">Date:</span> <span id="out-date" class="font-bold text-brand-navy"></span></p>
                     </div>
-                    <div class="py-6 flex-1">
-                        <p id="out-complaints" class="text-xs text-slate-400 italic"></p>
-                        <p id="out-diagnosis" class="text-lg font-bold text-brand-blue mb-4"></p>
-                        <div class="text-4xl text-brand-blue mb-4">℞</div>
-                        <p id="out-medicines" class="text-lg font-bold whitespace-pre-wrap leading-relaxed"></p>
-                        <p id="out-advice" class="text-sm mt-8 p-4 bg-slate-50 rounded-lg italic"></p>
-                    </div>
-                    <div class="flex justify-between items-end">
-                        <p class="text-xs">MindCare Kochi | +91 6282360907</p>
-                        <div class="text-center">
-                            <img src="../public/seal.png" class="h-16 opacity-50" onerror="this.style.display='none'">
-                            <img src="../public/sign.png" class="h-12" onerror="this.style.display='none'">
-                            <p class="font-bold text-sm">Dr. Abimanyu P.K</p>
-                            <p class="text-[10px]">REG NO: TCMC-68033</p>
+
+                    <div class="px-10 py-8 flex-1 flex flex-col">
+                        
+                        <div id="clinical-container" class="grid grid-cols-2 gap-8 pb-6 border-b border-slate-100 mb-6 hidden">
+                            <div id="complaints-container" class="hidden">
+                                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Complaints</h3>
+                                <p id="out-complaints" class="text-sm font-medium text-brand-navy whitespace-pre-wrap"></p>
+                            </div>
+                            <div id="diagnosis-container" class="hidden">
+                                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Diagnosis</h3>
+                                <p id="out-diagnosis" class="text-sm font-bold text-brand-blue uppercase whitespace-pre-wrap"></p>
+                            </div>
+                        </div>
+
+                        <div class="flex-1">
+                            <div class="text-4xl font-serif text-brand-blue mb-4">℞</div>
+                            <p id="out-medicines" class="text-base font-medium text-brand-navy whitespace-pre-wrap leading-loose px-4"></p>
+                        </div>
+
+                        <div id="advice-container" class="mt-8 hidden">
+                            <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 border-b pb-1">Advice & Instructions</h3>
+                            <p id="out-advice" class="text-sm font-medium text-brand-navy whitespace-pre-wrap leading-relaxed"></p>
                         </div>
                     </div>
+
+                    <div class="px-10 pb-10 pt-4 flex justify-between items-end mt-auto">
+                        <div class="w-1/3">
+                            <p class="text-xs text-slate-500 leading-relaxed font-medium">
+                                <strong>MindCare Kochi</strong><br>
+                                Appointments: +91 6282360907<br>
+                                Valid for substitution unless marked.
+                            </p>
+                        </div>
+                        <div class="text-center w-1/3 relative flex flex-col items-center">
+                            <div class="h-16 flex items-center justify-center relative w-full mb-1">
+                                <img src="../public/seal.png" class="absolute -left-2 top-0 h-24 opacity-30 mix-blend-multiply" onerror="this.style.display='none'">
+                                <img src="../public/sign.png" class="h-14 relative z-10" onerror="this.style.display='none'">
+                            </div>
+                            <div class="w-40 border-t border-slate-300 mx-auto mt-1"></div>
+                            <p class="font-bold text-sm mt-1 text-brand-navy">Dr. Abimanyu P.K</p>
+                            <p class="text-[10px] font-bold text-slate-400 mt-0.5 tracking-wider">REG NO: TCMC-68033</p>
+                        </div>
+                    </div>
+                    
+                    <div class="h-3 w-full bg-brand-blue absolute bottom-0 left-0"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Set Date
+        document.getElementById('out-date').innerText = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+        // PIN Login
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
             if(document.getElementById('pin-input').value === "4827") {
@@ -99,37 +135,57 @@
             }
         });
         
-        // Data binding
+        // Data binding & Smart Visibility Logic
         const inputs = ['name', 'medicines', 'complaints', 'diagnosis', 'advice'];
         inputs.forEach(id => {
             document.getElementById(`in-${id}`).addEventListener('input', (e) => {
-                document.getElementById(`out-${id}`).innerText = e.target.value;
+                const val = e.target.value;
+                document.getElementById(`out-${id}`).innerText = val;
+                
+                // Smart Hiding for Complaints, Diagnosis, Advice
+                if (['complaints', 'diagnosis', 'advice'].includes(id)) {
+                    const container = document.getElementById(`${id}-container`);
+                    if (val.trim()) {
+                        container.classList.remove('hidden');
+                    } else {
+                        container.classList.add('hidden');
+                    }
+                }
+                
+                // Hide the whole top grid if both complaints and diagnosis are empty
+                if (id === 'complaints' || id === 'diagnosis') {
+                    const compVal = document.getElementById('in-complaints').value.trim();
+                    const diagVal = document.getElementById('in-diagnosis').value.trim();
+                    const clinicalGrid = document.getElementById('clinical-container');
+                    
+                    if (compVal || diagVal) {
+                        clinicalGrid.classList.remove('hidden');
+                    } else {
+                        clinicalGrid.classList.add('hidden');
+                    }
+                }
             });
         });
+
+        // Age/Sex combination
         document.getElementById('in-age').addEventListener('input', updateAgeSex);
         document.getElementById('in-sex').addEventListener('change', updateAgeSex);
-        
         function updateAgeSex() {
             document.getElementById('out-agesex').innerText = `${document.getElementById('in-age').value || '___'} / ${document.getElementById('in-sex').value || '___'}`;
         }
         
-        // High-Quality Image Generation Logic
+        // High-Quality Image Generation
         function generateImage() {
             const element = document.getElementById('prescription-preview');
-            
             html2canvas(element, {
-                scale: 4, // Multiplies the resolution by 4 for extreme clarity
-                useCORS: true, // Ensures your logos and signatures load properly
+                scale: 4, 
+                useCORS: true,
                 onclone: function (clonedDoc) {
-                    // Removes the mobile scale-down effect just for the snapshot, ensuring a full A4 sized image
                     const clonedElement = clonedDoc.getElementById('prescription-preview');
                     clonedElement.classList.remove('scale-[0.6]', 'lg:scale-100');
                 }
             }).then(canvas => {
-                // Convert the snapshot to a high-quality JPEG
                 const imgData = canvas.toDataURL('image/jpeg', 1.0);
-                
-                // Trigger the download automatically
                 const link = document.createElement('a');
                 const patientName = document.getElementById('in-name').value || 'Patient';
                 link.download = `Rx_${patientName}.jpg`;
