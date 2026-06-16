@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindCare Rx Generator | Secure</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Added QRCode.js for dynamic verification codes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Manrope', 'sans-serif'] }, colors: { brand: { navy: '#0f172a', blue: '#2563eb', slate: '#475569' } } } } }
+    </script>
+    <style>
+        body { background-color: #f8fafc; }
+        .a4-print { width: 210mm; min-height: 297mm; background: white; margin: 0 auto; }
+        @media print { .no-print { display: none !important; } }
+        /* Ensures the QR code renders cleanly in the exported image */
+        #qrcode img { display: block; margin: 0 auto; }
+    </style>
+</head>
+<body class="text-brand-slate">
+
+    <div id="login-screen" class="min-h-screen flex items-center justify-center bg-slate-100 px-4 fixed inset-0 z-50">
+        <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md border border-slate-200">
+            <h1 class="text-2xl font-bold text-center text-brand-navy mb-8">MindCare Secure Access</h1>
+            <form id="login-form" class="space-y-6">
+                <input type="password" id="pin-input" class="w-full px-4 py-4 rounded-xl border text-center text-2xl font-bold tracking-[0.5em]" placeholder="••••" required autofocus>
+                <button type="submit" class="w-full bg-brand-blue text-white font-bold py-4 rounded-xl">Unlock Portal</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-screen" class="min-h-screen bg-slate-100 p-2 lg:p-8 hidden">
+        <div class="max-w-[1600px] mx-auto grid lg:grid-cols-12 gap-4 lg:gap-8 items-start">
+            
+            <div class="w-full lg:col-span-4 bg-white p-4 lg:p-6 rounded-3xl shadow-sm border border-slate-200 lg:sticky lg:top-8 no-print">
+                <h2 class="text-xl font-bold mb-6">Rx Details</h2>
+                <div class="space-y-4">
+                    <input type="text" id="in-name" placeholder="Patient Name" class="w-full p-3 rounded-xl border bg-slate-50">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="text" id="in-age" placeholder="Age" class="w-full p-3 rounded-xl border bg-slate-50">
+                        <select id="in-sex" class="w-full p-3 rounded-xl border bg-slate-50">
+                            <option value="">Sex</option><option value="Male">Male</option><option value="Female">Female</option>
+                        </select>
+                    </div>
+                    <textarea id="in-complaints" placeholder="Complaints" class="w-full p-3 rounded-xl border bg-slate-50"></textarea>
+                    <input type="text" id="in-diagnosis" placeholder="Diagnosis" class="w-full p-3 rounded-xl border bg-slate-50">
+                    <textarea id="in-medicines" placeholder="Medicines (Rx)" rows="6" class="w-full p-3 rounded-xl border bg-blue-50"></textarea>
+                    <textarea id="in-advice" placeholder="Advice" class="w-full p-3 rounded-xl border bg-slate-50"></textarea>
+                    <button id="export-btn" onclick="generateImage()" class="w-full bg-brand-blue text-white font-bold py-4 rounded-xl">Export High-Quality Image</button>
+                </div>
+            </div>
+
+            <div class="w-full lg:col-span-8 flex justify-center pb-10 overflow-hidden">
+                <div id="prescription-preview" class="a4-print flex flex-col relative bg-white overflow-hidden text-black font-sans w-full max-w-[210mm] scale-[0.6] lg:scale-100 origin-top">
+                    
+                    <div class="px-10 pt-12 pb-6 border-b-2 border-brand-blue flex justify-between items-end">
+                        <div>
+                            <h1 class="text-3xl font-extrabold text-brand-navy whitespace-nowrap">Dr. Abimanyu P.K</h1>
+                            <p class="text-brand-blue font-bold text-lg whitespace-nowrap">Consultant Psychiatrist</p>
+                            <p class="text-slate-500 text-sm whitespace-nowrap">MBBS, MD (Psychiatry)</p>
+                        </div>
+                        <div class="text-right">
+                            <img src="../public/logo.png" class="h-24 ml-auto mb-3 object-contain" onerror="this.style.display='none'">
+                            <p class="text-brand-navy text-sm font-bold whitespace-nowrap">MindCare Psychiatry Clinic</p>
+                        </div>
+                    </div>
+                    
+                    <div class="px-10 py-3 bg-slate-50 border-b border-slate-200 flex justify-between items-center text-sm">
+                        <div class="flex gap-8">
+                            <p><span class="text-slate-400 font-bold uppercase text-xs tracking-wider mr-1">Name:</span> <span id="out-name" class="font-bold text-brand-navy">__________________</span></p>
+                            <p><span class="text-slate-400 font-bold uppercase text-xs tracking-wider mr-1">Age/Sex:</span> <span id="out-agesex" class="font-bold text-brand-navy">___ / ___</span></p>
+                        </div>
+                        <p><span class="text-slate-400 font-bold uppercase text-xs tracking-wider mr-1">Date:</span> <span id="out-date" class="font-bold text-brand-navy"></span></p>
+                    </div>
+
+                    <div class="px-10 py-8 flex-1 flex flex-col">
+                        
+                        <div id="clinical-container" class="grid grid-cols-2 gap-8 pb-6 border-b border-slate-100 mb-6 hidden">
+                            <div id="complaints-container" class="hidden">
+                                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Complaints</h3>
+                                <p id="out-complaints" class="text-sm font-medium text-brand-navy whitespace-pre-wrap"></p>
+                            </div>
+                            <div id="diagnosis-container" class="hidden">
+                                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Diagnosis</h3>
+                                <p id="out-diagnosis" class="text-sm font-bold text-brand-blue uppercase whitespace-pre-wrap"></p>
+                            </div>
+                        </div>
+
+                        <div class="flex-1">
+                            <div class="text-4xl font-serif text-brand-blue mb-4">℞</div>
+                            <p id="out-medicines" class="text-base font-medium text-brand-navy whitespace-pre-wrap leading-loose px-4"></p>
+                        </div>
+
+                        <div id="advice-container" class="mt-8 hidden">
+                            <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 border-b pb-1">Advice & Instructions</h3>
+                            <p id="out-advice" class="text-sm font-medium text-brand-navy whitespace-pre-wrap leading-relaxed"></p>
+                        </div>
+                    </div>
+
+                    <div class="px-10 pb-10 pt-4 flex justify-between items-end mt-auto">
+                        <div class="w-1/3 flex flex-col justify-end">
+                            <!-- QR Code Container -->
+                            <div class="flex items-center gap-3 mb-4">
+                                <div id="qrcode" class="border border-slate-200 p-1.5 rounded-lg bg-white"></div>
+                                <div class="text-[8px] text-slate-400 font-bold uppercase tracking-widest leading-tight">
+                                    Scan to<br>Verify<br>Authenticity
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-500 leading-relaxed font-medium">
+                                <strong>MindCare Kochi</strong><br>
+                                Appointments: +91 6282360907
+                            </p>
+                        </div>
+                        <div class="text-center w-1/3 relative flex flex-col items-center">
+                            <div class="h-16 flex items-center justify-center relative w-full mb-1">
+                                <img src="../public/seal.png" class="absolute -left-2 top-0 h-24 opacity-30 mix-blend-multiply" onerror="this.style.display='none'">
+                                <img src="../public/sign.png" class="h-14 relative z-10" onerror="this.style.display='none'">
+                            </div>
+                            <div class="w-40 border-t border-slate-300 mx-auto mt-1"></div>
+                            <p class="font-bold text-sm mt-1 text-brand-navy whitespace-nowrap">Dr. Abimanyu P.K</p>
+                            <p class="text-[10px] font-bold text-slate-400 mt-0.5 tracking-wider whitespace-nowrap">REG NO: TCMC-68033</p>
+                        </div>
+                    </div>
+                    
+                    <div class="h-3 w-full bg-brand-blue absolute bottom-0 left-0"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set Date
+        const currentDate = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        document.getElementById('out-date').innerText = currentDate;
+
+        // Initialize QR Code
+        const qrCode = new QRCode(document.getElementById("qrcode"), {
+            text: `MindCare Verified Rx\nDr. Abimanyu P.K\nDate: ${currentDate}`,
+            width: 56,
+            height: 56,
+            colorDark : "#0f172a",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.L
+        });
+
+        // Function to update QR code data dynamically
+        function updateQRCode() {
+            const ptName = document.getElementById('in-name').value.trim() || 'Patient';
+            const verifyText = `Verified Rx\nDr. Abimanyu P.K (TCMC-68033)\nPatient: ${ptName}\nDate: ${currentDate}`;
+            qrCode.clear();
+            qrCode.makeCode(verifyText);
+        }
+
+        // PIN Login
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if(document.getElementById('pin-input').value === "4827") {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('app-screen').classList.remove('hidden');
+            }
+        });
+        
+        // Data binding & Smart Visibility Logic
+        const inputs = ['name', 'medicines', 'complaints', 'diagnosis', 'advice'];
+        inputs.forEach(id => {
+            document.getElementById(`in-${id}`).addEventListener('input', (e) => {
+                const val = e.target.value;
+                document.getElementById(`out-${id}`).innerText = val;
+                
+                if (['complaints', 'diagnosis', 'advice'].includes(id)) {
+                    const container = document.getElementById(`${id}-container`);
+                    if (val.trim()) { container.classList.remove('hidden'); } else { container.classList.add('hidden'); }
+                }
+                
+                if (id === 'complaints' || id === 'diagnosis') {
+                    const compVal = document.getElementById('in-complaints').value.trim();
+                    const diagVal = document.getElementById('in-diagnosis').value.trim();
+                    const clinicalGrid = document.getElementById('clinical-container');
+                    if (compVal || diagVal) { clinicalGrid.classList.remove('hidden'); } else { clinicalGrid.classList.add('hidden'); }
+                }
+
+                // Update QR code whenever the patient name changes
+                if (id === 'name') {
+                    updateQRCode();
+                }
+            });
+        });
+
+        document.getElementById('in-age').addEventListener('input', updateAgeSex);
+        document.getElementById('in-sex').addEventListener('change', updateAgeSex);
+        function updateAgeSex() {
+            document.getElementById('out-agesex').innerText = `${document.getElementById('in-age').value || '___'} / ${document.getElementById('in-sex').value || '___'}`;
+        }
+        
+        // Force Desktop Screen Dimensions for Mobile Devices (Ultra-High Quality)
+        function generateImage() {
+            const element = document.getElementById('prescription-preview');
+            const btn = document.getElementById('export-btn');
+            const originalText = btn.innerText;
+            btn.innerText = "Generating High-Res Image..."; 
+            
+            html2canvas(element, {
+                scale: 5, 
+                useCORS: true,
+                windowWidth: 1200, 
+                onclone: function (clonedDoc) {
+                    const clonedElement = clonedDoc.getElementById('prescription-preview');
+                    clonedElement.style.transform = 'none';
+                    clonedElement.style.width = '794px'; 
+                    clonedElement.style.minHeight = '1123px';
+                    clonedElement.style.maxWidth = 'none';
+                    clonedElement.classList.remove('scale-[0.6]', 'lg:scale-100');
+                }
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                const link = document.createElement('a');
+                const patientName = document.getElementById('in-name').value.trim() || 'Patient';
+                link.download = `Rx_${patientName}.jpg`;
+                link.href = imgData;
+                link.click();
+                btn.innerText = originalText;
+            }).catch(err => {
+                console.error("Image generation failed:", err);
+                btn.innerText = "Error - Try Again";
+                setTimeout(() => { btn.innerText = originalText; }, 3000);
+            });
+        }
+    </script>
+</body>
+</html>
