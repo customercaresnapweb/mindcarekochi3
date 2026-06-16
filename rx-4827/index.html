@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Added QRCode.js for dynamic verification codes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
         tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'], heading: ['Manrope', 'sans-serif'] }, colors: { brand: { navy: '#0f172a', blue: '#2563eb', slate: '#475569' } } } } }
     </script>
@@ -15,6 +17,8 @@
         body { background-color: #f8fafc; }
         .a4-print { width: 210mm; min-height: 297mm; background: white; margin: 0 auto; }
         @media print { .no-print { display: none !important; } }
+        /* Ensures the QR code renders cleanly in the exported image */
+        #qrcode img { display: block; margin: 0 auto; }
     </style>
 </head>
 <body class="text-brand-slate">
@@ -98,11 +102,17 @@
                     </div>
 
                     <div class="px-10 pb-10 pt-4 flex justify-between items-end mt-auto">
-                        <div class="w-1/3">
+                        <div class="w-1/3 flex flex-col justify-end">
+                            <!-- QR Code Container -->
+                            <div class="flex items-center gap-3 mb-4">
+                                <div id="qrcode" class="border border-slate-200 p-1.5 rounded-lg bg-white"></div>
+                                <div class="text-[8px] text-slate-400 font-bold uppercase tracking-widest leading-tight">
+                                    Scan to<br>Verify<br>Authenticity
+                                </div>
+                            </div>
                             <p class="text-xs text-slate-500 leading-relaxed font-medium">
                                 <strong>MindCare Kochi</strong><br>
-                                Appointments: +91 6282360907<br>
-                                Valid for substitution unless marked.
+                                Appointments: +91 6282360907
                             </p>
                         </div>
                         <div class="text-center w-1/3 relative flex flex-col items-center">
@@ -124,7 +134,26 @@
 
     <script>
         // Set Date
-        document.getElementById('out-date').innerText = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        const currentDate = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        document.getElementById('out-date').innerText = currentDate;
+
+        // Initialize QR Code
+        const qrCode = new QRCode(document.getElementById("qrcode"), {
+            text: `MindCare Verified Rx\nDr. Abimanyu P.K\nDate: ${currentDate}`,
+            width: 56,
+            height: 56,
+            colorDark : "#0f172a",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.L
+        });
+
+        // Function to update QR code data dynamically
+        function updateQRCode() {
+            const ptName = document.getElementById('in-name').value.trim() || 'Patient';
+            const verifyText = `Verified Rx\nDr. Abimanyu P.K (TCMC-68033)\nPatient: ${ptName}\nDate: ${currentDate}`;
+            qrCode.clear();
+            qrCode.makeCode(verifyText);
+        }
 
         // PIN Login
         document.getElementById('login-form').addEventListener('submit', (e) => {
@@ -153,6 +182,11 @@
                     const clinicalGrid = document.getElementById('clinical-container');
                     if (compVal || diagVal) { clinicalGrid.classList.remove('hidden'); } else { clinicalGrid.classList.add('hidden'); }
                 }
+
+                // Update QR code whenever the patient name changes
+                if (id === 'name') {
+                    updateQRCode();
+                }
             });
         });
 
@@ -162,15 +196,15 @@
             document.getElementById('out-agesex').innerText = `${document.getElementById('in-age').value || '___'} / ${document.getElementById('in-sex').value || '___'}`;
         }
         
-        // Force Desktop Screen Dimensions for Mobile Devices
+        // Force Desktop Screen Dimensions for Mobile Devices (Ultra-High Quality)
         function generateImage() {
             const element = document.getElementById('prescription-preview');
             const btn = document.getElementById('export-btn');
             const originalText = btn.innerText;
-            btn.innerText = "Generating Image..."; 
+            btn.innerText = "Generating High-Res Image..."; 
             
             html2canvas(element, {
-                scale: 3, 
+                scale: 5, 
                 useCORS: true,
                 windowWidth: 1200, 
                 onclone: function (clonedDoc) {
@@ -182,7 +216,7 @@
                     clonedElement.classList.remove('scale-[0.6]', 'lg:scale-100');
                 }
             }).then(canvas => {
-                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
                 const link = document.createElement('a');
                 const patientName = document.getElementById('in-name').value.trim() || 'Patient';
                 link.download = `Rx_${patientName}.jpg`;
