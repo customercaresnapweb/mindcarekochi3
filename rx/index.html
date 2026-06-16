@@ -155,12 +155,15 @@
             qrCode.makeCode(verifyText);
         }
 
-        // PIN Login
+        // PIN Login - Updated to 3830
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            if(document.getElementById('pin-input').value === "4827") {
+            if(document.getElementById('pin-input').value === "3830") {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-screen').classList.remove('hidden');
+            } else {
+                alert("Incorrect PIN");
+                document.getElementById('pin-input').value = "";
             }
         });
         
